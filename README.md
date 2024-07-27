@@ -1,2 +1,2 @@
-# springboot-msa-order
-springboot-msa 스터디 실습 레포
+# spring-boot-msa-order
+spring-boot-msa 스터디 실습 레포
