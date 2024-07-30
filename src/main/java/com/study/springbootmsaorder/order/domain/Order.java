@@ -20,14 +20,8 @@ public class Order extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "product_id", nullable = false)
-    private Long productId;
-
     @Column(name = "member_id", nullable = false)
     private Long memberId;
-
-    @Column(name = "quantity", nullable = false)
-    private Long quantity;
 
     @Column(name = "total_price", nullable = false)
     private Long totalPrice;
@@ -38,14 +32,10 @@ public class Order extends BaseEntity {
 
     @Builder
     public Order(
-            final Long productId,
             final Long memberId,
-            final Long quantity,
             final Long totalPrice
     ) {
-        this.productId = productId;
         this.memberId = memberId;
-        this.quantity = quantity;
         this.totalPrice = totalPrice;
         this.orderStatus = OrderStatus.CREATED;
     }

@@ -1,14 +1,27 @@
 package com.study.springbootmsaorder.order.controller.dto;
 
-import com.study.springbootmsaorder.order.domain.Order;
+import java.util.List;
 
-public record OrderCreateRequest(Long memberId, Long productId, Long quantity, Long totalPrice) {
+import com.study.springbootmsaorder.order.domain.Order;
+import com.study.springbootmsaorder.order.domain.OrderProduct;
+
+public record OrderCreateRequest(Long memberId, Long totalPrice, List<Product> products) {
+
+    public record Product(Long productId, Long quantity, Long unitPrice) {
+
+        public OrderProduct toOrderProductEntity(final Long orderId) {
+            return OrderProduct.builder()
+                    .orderId(orderId)
+                    .productId(productId)
+                    .quantity(quantity)
+                    .unitPrice(unitPrice)
+                    .build();
+        }
+    }
 
     public Order toOrderEntity() {
         return Order.builder()
                 .memberId(memberId)
-                .productId(productId)
-                .quantity(quantity)
                 .totalPrice(totalPrice)
                 .build();
     }
