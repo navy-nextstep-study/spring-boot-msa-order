@@ -28,7 +28,6 @@ public class OrderService {
     @Transactional
     public Long createOrder(final OrderCreateRequest orderCreateRequest) {
         // 상품 재고 감소 요청
-
         final Order order = orderCreateRequest.toOrderEntity();
         final Order savedOrder = orderRepository.save(order);
 

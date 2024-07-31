@@ -25,6 +25,6 @@ public enum OrderStatus {
     private final String value;
 
     public static OrderStatus of(final String orderStatusString) {
-        return orderStatusMap.get(orderStatusString);
+        return orderStatusMap.get(orderStatusString.toUpperCase());
     }
 }
