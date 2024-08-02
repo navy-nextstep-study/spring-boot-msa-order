@@ -1,14 +1,13 @@
-package com.study.springbootmsaorder.order.service;
+package com.study.springbootmsaorder.messaging.consumer;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.study.springbootmsaorder.order.domain.Order;
-import com.study.springbootmsaorder.order.domain.OrderStatus;
-import com.study.springbootmsaorder.order.domain.repository.OrderRepository;
-import com.study.springbootmsaorder.order.service.dto.PaymentResult;
+import com.study.springbootmsaorder.domain.order.domain.Order;
+import com.study.springbootmsaorder.domain.order.domain.OrderStatus;
+import com.study.springbootmsaorder.domain.order.domain.repository.OrderRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

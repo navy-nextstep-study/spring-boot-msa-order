@@ -1,4 +1,4 @@
-package com.study.springbootmsaorder.order.service.dto;
+package com.study.springbootmsaorder.messaging.consumer;
 
 public record PaymentResult(Long orderId, String status) {
 

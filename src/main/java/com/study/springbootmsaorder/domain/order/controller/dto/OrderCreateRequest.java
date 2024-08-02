@@ -1,9 +1,9 @@
-package com.study.springbootmsaorder.order.controller.dto;
+package com.study.springbootmsaorder.domain.order.controller.dto;
 
 import java.util.List;
 
-import com.study.springbootmsaorder.order.domain.Order;
-import com.study.springbootmsaorder.order.domain.OrderProduct;
+import com.study.springbootmsaorder.domain.order.domain.Order;
+import com.study.springbootmsaorder.domain.order.domain.OrderProduct;
 
 public record OrderCreateRequest(Long memberId, Long totalPrice, List<Product> products) {
 

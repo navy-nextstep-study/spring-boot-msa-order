@@ -1,4 +1,6 @@
-package com.study.springbootmsaorder.order.domain;
+package com.study.springbootmsaorder.domain.order.domain;
+
+import com.study.springbootmsaorder.global.domain.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;

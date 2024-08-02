@@ -1,4 +1,4 @@
-package com.study.springbootmsaorder.order.domain;
+package com.study.springbootmsaorder.domain.order.domain;
 
 import jakarta.persistence.AttributeConverter;
 

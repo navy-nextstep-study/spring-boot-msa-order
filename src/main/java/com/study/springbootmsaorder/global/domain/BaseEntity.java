@@ -1,4 +1,4 @@
-package com.study.springbootmsaorder.order.domain;
+package com.study.springbootmsaorder.global.domain;
 
 import java.time.LocalDateTime;
 
