@@ -14,6 +14,8 @@ import com.study.springbootmsaorder.domain.order.domain.OrderStatus;
 import com.study.springbootmsaorder.domain.order.domain.repository.OrderProductRepository;
 import com.study.springbootmsaorder.domain.order.domain.repository.OrderRepository;
 import com.study.springbootmsaorder.domain.order.service.dto.PaymentCancelEvent;
+import com.study.springbootmsaorder.domain.order.service.dto.ProductStock;
+import com.study.springbootmsaorder.domain.order.service.dto.ProductStockIncreaseEvent;
 import com.study.springbootmsaorder.domain.outbox.domain.AggregateType;
 import com.study.springbootmsaorder.domain.outbox.domain.EventType;
 import com.study.springbootmsaorder.domain.outbox.domain.Outbox;
@@ -29,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class OrderService {
 
-    private final OutboxService<PaymentCancelEvent> outboxService;
+    private final OutboxService outboxService;
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -66,10 +68,48 @@ public class OrderService {
         final Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("order id not found"));
 
+        boolean isCanceled = isOrderStatusCanceled(order);
+
+        if (isCanceled) {
+            throw new IllegalArgumentException("이미 주문 취소된 건입니다.");
+        }
+
         order.updateOrderStatus(OrderStatus.CANCELED);
 
-        // TODO 상품 재고 증가 요청
+        productStockIncreaseProcess(order); // 상품 재고 증가 요청
+        paymentCancelProcess(orderId, orderCancelRequest); // 결제 취소 요청
+    }
 
+    private boolean isOrderStatusCanceled(final Order order) {
+        return order.getOrderStatus() == OrderStatus.CANCELED;
+    }
+
+    private void productStockIncreaseProcess(final Order order) {
+        final List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(order.getId());
+
+        final List<ProductStock> productStocks = orderProducts.stream()
+                .map(orderProduct -> ProductStock.builder()
+                        .quantity(orderProduct.getQuantity())
+                        .productId(orderProduct.getProductId())
+                        .build()
+                )
+                .toList();
+
+        final ProductStockIncreaseEvent productStockIncreaseEvent = new ProductStockIncreaseEvent(productStocks);
+
+        final Outbox outbox = outboxService.saveEventToOutbox(
+                AggregateType.PRODUCT,
+                EventType.PRODUCT_STOCK_INCREASE,
+                Topic.PRODUCT_STOCK_INCREASE,
+                productStockIncreaseEvent
+        );
+
+        productStockIncreaseEvent.updateOutboxId(outbox.getId());
+
+        applicationEventPublisher.publishEvent(productStockIncreaseEvent);
+    }
+
+    private void paymentCancelProcess(final Long orderId, final OrderCancelRequest orderCancelRequest) {
         final PaymentCancelEvent paymentCancelEvent = PaymentCancelEvent.builder()
                 .orderId(orderId)
                 .memberId(orderCancelRequest.memberId())

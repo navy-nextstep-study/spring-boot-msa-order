@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class EventRetryProcessor {
 
-    private final OutboxService<String> outboxService;
+    private final OutboxService outboxService;
     private final OutboxRepository outboxRepository;
     private final KafkaProducer kafkaProducer;
 

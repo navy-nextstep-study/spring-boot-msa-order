@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Topic {
     PAYMENT_CANCEL("payment-cancel"),
+    PRODUCT_STOCK_INCREASE("product-stock-increase"),
     ;
 
     private final String value;

@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OutboxService<T> {
+public class OutboxService {
 
     private final ObjectMapper objectMapper;
     private final OutboxRepository outboxRepository;
@@ -35,7 +35,7 @@ public class OutboxService<T> {
      */
     @Transactional
     public Outbox saveEventToOutbox(final AggregateType aggregateType, final EventType eventType, final Topic topic,
-            final T payload) {
+            final Object payload) {
         Outbox savedOutbox = null;
 
         try {
@@ -49,7 +49,7 @@ public class OutboxService<T> {
 
             savedOutbox = outboxRepository.save(outbox);
         } catch (JsonProcessingException e) {
-            log.error("Outbox Json 변환 실패");
+            log.error("", e);
         }
 
         return savedOutbox;

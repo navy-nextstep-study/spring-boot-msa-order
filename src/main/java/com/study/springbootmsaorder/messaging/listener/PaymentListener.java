@@ -16,10 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PaymentCancelProcessListener {
+public class PaymentListener {
 
     private final KafkaProducer kafkaProducer;
-    private final OutboxService<String> outboxService;
+    private final OutboxService outboxService;
 
     /***
      * 주문 취소 후 결제 취소 이벤트 발행
@@ -27,7 +27,7 @@ public class PaymentCancelProcessListener {
      */
     @Async
     @TransactionalEventListener
-    public void process(final PaymentCancelEvent paymentCancelEvent) {
+    public void paymentCancel(final PaymentCancelEvent paymentCancelEvent) {
         try {
             outboxService.updateOutboxStatus(paymentCancelEvent.getOutboxId(), EventStatus.COMPLETED);
             kafkaProducer.send(Topic.PAYMENT_CANCEL.getValue(), paymentCancelEvent);
