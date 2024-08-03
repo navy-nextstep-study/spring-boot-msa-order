@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.study.springbootmsaorder.domain.order.controller.dto.OrderCancelRequest;
 import com.study.springbootmsaorder.domain.order.controller.dto.OrderCreateRequest;
+import com.study.springbootmsaorder.domain.order.controller.dto.OrderProductResponse;
+import com.study.springbootmsaorder.domain.order.controller.dto.OrderResponse;
 import com.study.springbootmsaorder.domain.order.domain.Order;
 import com.study.springbootmsaorder.domain.order.domain.OrderProduct;
 import com.study.springbootmsaorder.domain.order.domain.OrderStatus;
@@ -65,8 +67,7 @@ public class OrderService {
      */
     @Transactional
     public void cancelOrder(final Long orderId, final OrderCancelRequest orderCancelRequest) {
-        final Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("order id not found"));
+        final Order order = getOrderById(orderId);
 
         boolean isCanceled = isOrderStatusCanceled(order);
 
@@ -78,6 +79,11 @@ public class OrderService {
 
         productStockIncreaseProcess(order); // 상품 재고 증가 요청
         paymentCancelProcess(orderId, orderCancelRequest); // 결제 취소 요청
+    }
+
+    private Order getOrderById(final Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("order id not found"));
     }
 
     private boolean isOrderStatusCanceled(final Order order) {
@@ -125,5 +131,34 @@ public class OrderService {
         paymentCancelEvent.updateOutboxId(outbox.getId());
 
         applicationEventPublisher.publishEvent(paymentCancelEvent);
+    }
+
+    /***
+     * 주문 조회
+     * @param orderId
+     * @return
+     */
+    public OrderResponse getOrder(final Long orderId) {
+        final Order order = getOrderById(orderId);
+        final List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(orderId);
+
+        final List<OrderProductResponse> orderProductResponses = orderProducts.stream()
+                .map(orderProduct -> OrderProductResponse.builder()
+                        .orderProductId(orderProduct.getProductId())
+                        .orderId(orderProduct.getOrderId())
+                        .productId(orderProduct.getProductId())
+                        .quantity(orderProduct.getQuantity())
+                        .unitPrice(orderProduct.getUnitPrice())
+                        .build()
+                )
+                .toList();
+
+        return OrderResponse.builder()
+                .orderId(order.getId())
+                .memberId(order.getMemberId())
+                .orderStatus(order.getOrderStatus())
+                .totalPrice(order.getTotalPrice())
+                .orderProductResponses(orderProductResponses)
+                .build();
     }
 }
