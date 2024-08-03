@@ -21,4 +21,4 @@ spring:
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
 
 api:
-  product-url: ${API_PRODUCT_URL}
+  product_url: ${API_PRODUCT_URL}

@@ -3,10 +3,12 @@ package com.study.springbootmsaorder.global.config.property;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@ConfigurationProperties(value = "api")
+@RequiredArgsConstructor
+@ConfigurationProperties(prefix = "api")
 public class ApiProperties {
 
-    private String productUrl;
+    private final String productUrl;
 }
