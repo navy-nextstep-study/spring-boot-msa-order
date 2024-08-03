@@ -19,3 +19,6 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+api:
+  product-url: ${API_PRODUCT_URL}

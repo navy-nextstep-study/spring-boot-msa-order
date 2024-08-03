@@ -31,6 +31,7 @@ jobs:
           echo "export PROD_MYSQL_URL=${{ secrets.PROD_MYSQL_URL }}" >> env.sh
           echo "export PROD_MYSQL_USERNAME=${{ secrets.PROD_MYSQL_USERNAME }}" >> env.sh
           echo "export PROD_MYSQL_PASSWORD=${{ secrets.PROD_MYSQL_PASSWORD }}" >> env.sh
+          echo "export API_PRODUCT_URL=${{ secrets.API_PRODUCT_URL }}" >> env.sh
           
           echo "cd /home/ubuntu/build/libs" >> restart.sh
           echo "source env.sh" >> restart.sh

@@ -22,6 +22,7 @@ import com.study.springbootmsaorder.domain.outbox.domain.AggregateType;
 import com.study.springbootmsaorder.domain.outbox.domain.EventType;
 import com.study.springbootmsaorder.domain.outbox.domain.Outbox;
 import com.study.springbootmsaorder.domain.outbox.service.OutboxService;
+import com.study.springbootmsaorder.global.api.ProductHttpClient;
 import com.study.springbootmsaorder.messaging.producer.Topic;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -35,6 +36,7 @@ public class OrderService {
 
     private final OutboxService outboxService;
     private final OrderRepository orderRepository;
+    private final ProductHttpClient productHttpClient;
     private final OrderProductRepository orderProductRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -45,7 +47,8 @@ public class OrderService {
      */
     @Transactional
     public Long createOrder(final OrderCreateRequest orderCreateRequest) {
-        // TODO 상품 재고 감소 요청
+        // productHttpClient.decreaseProductStock(orderCreateRequest.products()); // 상품 재고 감소 요청
+
         final Order order = orderCreateRequest.toOrderEntity();
         final Order savedOrder = orderRepository.save(order);
 
