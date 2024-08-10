@@ -10,14 +10,15 @@ import com.study.springbootmsaorder.domain.order.controller.dto.OrderCancelReque
 import com.study.springbootmsaorder.domain.order.controller.dto.OrderCreateRequest;
 import com.study.springbootmsaorder.domain.order.controller.dto.OrderProductResponse;
 import com.study.springbootmsaorder.domain.order.controller.dto.OrderResponse;
+import com.study.springbootmsaorder.domain.order.controller.dto.Product;
 import com.study.springbootmsaorder.domain.order.domain.Order;
 import com.study.springbootmsaorder.domain.order.domain.OrderProduct;
 import com.study.springbootmsaorder.domain.order.domain.OrderStatus;
 import com.study.springbootmsaorder.domain.order.domain.repository.OrderProductRepository;
 import com.study.springbootmsaorder.domain.order.domain.repository.OrderRepository;
-import com.study.springbootmsaorder.domain.order.service.dto.PaymentCancelEvent;
+import com.study.springbootmsaorder.domain.order.service.dto.OrderCancelEvent;
+import com.study.springbootmsaorder.domain.order.service.dto.ProductQuantityUpdateRequest;
 import com.study.springbootmsaorder.domain.order.service.dto.ProductStock;
-import com.study.springbootmsaorder.domain.order.service.dto.ProductStockIncreaseEvent;
 import com.study.springbootmsaorder.domain.outbox.domain.AggregateType;
 import com.study.springbootmsaorder.domain.outbox.domain.EventType;
 import com.study.springbootmsaorder.domain.outbox.domain.Outbox;
@@ -47,7 +48,13 @@ public class OrderService {
      */
     @Transactional
     public Long createOrder(final OrderCreateRequest orderCreateRequest) {
-        // productHttpClient.decreaseProductStock(orderCreateRequest.products()); // 상품 재고 감소 요청
+        final List<Product> products = orderCreateRequest.products();
+
+        final List<ProductStock> productStocks = products.stream()
+                .map(product -> new ProductStock(product.productId(), product.quantity() * -1))
+                .toList();
+
+        productHttpClient.decreaseProductStock(new ProductQuantityUpdateRequest(productStocks)); // 상품 재고 감소 요청
 
         final Order order = orderCreateRequest.toOrderEntity();
         final Order savedOrder = orderRepository.save(order);
@@ -80,20 +87,10 @@ public class OrderService {
 
         order.updateOrderStatus(OrderStatus.CANCELED);
 
-        productStockIncreaseProcess(order); // 상품 재고 증가 요청
-        paymentCancelProcess(orderId, orderCancelRequest); // 결제 취소 요청
+        orderCancelEventPublish(order, orderCancelRequest.memberId()); // 주문 취소 이벤트 발행
     }
 
-    private Order getOrderById(final Long orderId) {
-        return orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("order id not found"));
-    }
-
-    private boolean isOrderStatusCanceled(final Order order) {
-        return order.getOrderStatus() == OrderStatus.CANCELED;
-    }
-
-    private void productStockIncreaseProcess(final Order order) {
+    private void orderCancelEventPublish(final Order order, final Long memberId) {
         final List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(order.getId());
 
         final List<ProductStock> productStocks = orderProducts.stream()
@@ -104,36 +101,31 @@ public class OrderService {
                 )
                 .toList();
 
-        final ProductStockIncreaseEvent productStockIncreaseEvent = new ProductStockIncreaseEvent(productStocks);
-
-        final Outbox outbox = outboxService.saveEventToOutbox(
-                AggregateType.PRODUCT,
-                EventType.PRODUCT_STOCK_INCREASE,
-                Topic.PRODUCT_STOCK_INCREASE,
-                productStockIncreaseEvent
-        );
-
-        productStockIncreaseEvent.updateOutboxId(outbox.getId());
-
-        applicationEventPublisher.publishEvent(productStockIncreaseEvent);
-    }
-
-    private void paymentCancelProcess(final Long orderId, final OrderCancelRequest orderCancelRequest) {
-        final PaymentCancelEvent paymentCancelEvent = PaymentCancelEvent.builder()
-                .orderId(orderId)
-                .memberId(orderCancelRequest.memberId())
+        final OrderCancelEvent orderCancelEvent = OrderCancelEvent.builder()
+                .orderId(order.getId())
+                .memberId(memberId)
+                .productStocks(productStocks)
                 .build();
 
         final Outbox outbox = outboxService.saveEventToOutbox(
-                AggregateType.PAYMENT,
-                EventType.PAYMENT_CANCEL,
-                Topic.PAYMENT_CANCEL,
-                paymentCancelEvent
+                AggregateType.ORDER,
+                EventType.ORDER_CANCEL,
+                Topic.ORDER_CANCEL,
+                orderCancelEvent
         );
 
-        paymentCancelEvent.updateOutboxId(outbox.getId());
+        orderCancelEvent.updateOutboxId(outbox.getId());
 
-        applicationEventPublisher.publishEvent(paymentCancelEvent);
+        applicationEventPublisher.publishEvent(orderCancelEvent);
+    }
+
+    private Order getOrderById(final Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("order id not found"));
+    }
+
+    private boolean isOrderStatusCanceled(final Order order) {
+        return order.getOrderStatus() == OrderStatus.CANCELED;
     }
 
     /***
