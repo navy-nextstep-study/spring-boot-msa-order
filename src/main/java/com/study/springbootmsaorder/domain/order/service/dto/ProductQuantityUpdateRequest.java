@@ -2,11 +2,17 @@ package com.study.springbootmsaorder.domain.order.service.dto;
 
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@RequiredArgsConstructor
+@Getter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductQuantityUpdateRequest {
 
-    private final List<ProductStock> productStocks;
+    private List<ProductStock> productStocks;
 
+    public ProductQuantityUpdateRequest(final List<ProductStock> productStocks) {
+        this.productStocks = productStocks;
+    }
 }

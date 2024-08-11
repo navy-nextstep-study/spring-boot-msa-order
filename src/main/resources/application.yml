@@ -9,18 +9,15 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         query.in_clause_parameter_padding: true
   kafka:
-    bootstrap-servers: ${KAFKA_URL}
     producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      group-id: ${KAFKA_GROUP_ID}
-      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
-        spring.json.type.mapping: "message:com.study.springbootmsaorder.messaging.dto.Message"
-        spring.kafka.producer.value.serializer.addTypeInfo: false
-        spring.json.trusted.packages: "*"
-        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
-
+        json:
+          use:
+            type:
+              headers: false
 api:
   product_url: ${API_PRODUCT_URL}
+
+kafka:
+  url: ${KAFKA_URL}
+  group-id: ${KAFKA_GROUP_ID}
